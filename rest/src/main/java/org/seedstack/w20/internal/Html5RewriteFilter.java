@@ -17,6 +17,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 public class Html5RewriteFilter implements Filter {
     private static final String HTML5_REWRITE_FILTER = "html5-rewrite-filter";
@@ -43,12 +44,16 @@ public class Html5RewriteFilter implements Filter {
         } else {
             String path = ((HttpServletRequest) request).getRequestURI()
                     .substring(((HttpServletRequest) request).getContextPath().length());
-            // Ignore REST requests and requests having a file extension
             if (isRestRequest(path) || hasFileExtension(path)) {
+                // Ignore REST requests and requests having a file extension
                 filterChain.doFilter(request, response);
             } else {
-                markRequestAsRedirected(request);
-                request.getRequestDispatcher("/").forward(request, response);
+                filterChain.doFilter(request, response);
+                if (response instanceof HttpServletResponse
+                        && ((HttpServletResponse) response).getStatus() == HttpServletResponse.SC_NOT_FOUND) {
+                    markRequestAsRedirected(request);
+                    request.getRequestDispatcher("/").forward(request, response);
+                }
             }
         }
     }

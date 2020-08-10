@@ -7,6 +7,10 @@
 #
 
 logging: INFO
+
+rest:
+  path: /api
+
 w20:
   variables:
     '*':
